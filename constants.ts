@@ -22,7 +22,7 @@ export const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID || "Ov23l
 export const GITHUB_CALLBACK_URL = process.env.REACT_APP_GITHUB_CALLBACK_URL || "https://ai-portfolio-builder-six.vercel.app/"; 
 export const GITHUB_SCOPES = "repo user"; // Required scopes for creating repos and reading user info.
 
-export const GEMINI_API_KEY = process.env.API_KEY; // This should be configured in the environment.
+export const GEMINI_API_KEY = process.env.API_KEY || "AIzaSyAY5HSRi8e1bBLANwdlPLnLmUdRH3uHeUY"; // This should be configured in the environment.
 export const GEMINI_MODEL_NAME = "gemini-2.5-flash-preview-04-17";
 
 export const LOCAL_STORAGE_THEME_KEY = "portfolioAppTheme";
