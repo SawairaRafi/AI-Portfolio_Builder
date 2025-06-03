@@ -54,14 +54,14 @@ const generatePortfolioContent = async (
       }
     });
 
-    let jsonStr = response.text.trim();
+    let jsonStr = response?.text?.trim();
     const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s; // Matches ```json ... ``` or ``` ... ```
-    const match = jsonStr.match(fenceRegex);
+    const match = jsonStr?.match(fenceRegex);
     if (match && match[2]) {
       jsonStr = match[2].trim();
     }
     
-    const parsedData = JSON.parse(jsonStr) as GeneratedPortfolioContent;
+    const parsedData = JSON.parse(jsonStr as string) as GeneratedPortfolioContent;
 
     // Validate structure slightly
     if (!parsedData.enhancedBio || !Array.isArray(parsedData.projectSummaries) || !Array.isArray(parsedData.skillsKeywords)) {
