@@ -85,7 +85,9 @@ const createOrUpdateFile = (
 
 const getBranch = async (token: string, owner: string, repo: string, branch: string): Promise<{object: {sha:string}} | null> => {
     try {
-        return await makeGitHubRequest<{object: {sha:string}}>(`/repos/${owner}/${repo}/git/ref/heads/${branch}`, token);
+      return await makeGitHubRequest<{object: {sha:string}}>(`/repos/${owner}/${repo}/git/refs/heads/${branch}`, token);
+
+        // return await makeGitHubRequest<{object: {sha:string}}>(`/repos/${owner}/${repo}/git/ref/heads/${branch}`, token);
     } catch (error: any) {
         if (error.message && error.message.includes("404")) return null;
         throw error;
