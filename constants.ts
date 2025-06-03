@@ -19,7 +19,7 @@ export const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID || "Ov23l
 // For local development with Vite, this is typically http://localhost:5173/.
 // For other environments, adjust accordingly.
 // =====================================================================================
-export const GITHUB_CALLBACK_URL = process.env.REACT_APP_GITHUB_CALLBACK_URL || "http://localhost:5173/"; 
+export const GITHUB_CALLBACK_URL = process.env.REACT_APP_GITHUB_CALLBACK_URL || "https://ai-portfolio-builder-six.vercel.app/"; 
 export const GITHUB_SCOPES = "repo user"; // Required scopes for creating repos and reading user info.
 
 export const GEMINI_API_KEY = process.env.API_KEY; // This should be configured in the environment.
