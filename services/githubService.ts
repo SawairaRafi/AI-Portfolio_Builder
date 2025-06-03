@@ -1,4 +1,5 @@
 
+
 // import { GitHubUser, GitHubRepo } from '../types';
 
 // const GITHUB_API_BASE_URL = 'https://api.github.com';
@@ -85,9 +86,29 @@
 
 // const getBranch = async (token: string, owner: string, repo: string, branch: string): Promise<{object: {sha:string}} | null> => {
 //     try {
-//         return await makeGitHubRequest<{object: {sha:string}}>(`/repos/${owner}/${repo}/git/ref/heads/${branch}`, token);
+//         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`, {
+//             headers: {
+//                 'Authorization': `token ${token}`,
+//                 'Accept': 'application/vnd.github.v3+json',
+//                 'X-GitHub-Api-Version': '2022-11-28'
+//             }
+//         });
+        
+//         if (response.status === 404) {
+//             return null;
+//         }
+        
+//         if (!response.ok) {
+//             const errorData = await response.json().catch(() => ({}));
+//             throw new Error(errorData.message || 'Failed to get branch');
+//         }
+        
+//         return response.json();
 //     } catch (error: any) {
-//         if (error.message && error.message.includes("404")) return null;
+//         console.error('Error in getBranch:', error);
+//         if (error.message && (error.message.includes('404') || error.message.includes('Not Found'))) {
+//             return null;
+//         }
 //         throw error;
 //     }
 // };
@@ -101,13 +122,31 @@
 // }
 
 // const createBranch = async (token: string, owner: string, repo: string, newBranchName: string, fromSha: string): Promise<any> => {
-//     return makeGitHubRequest(`/repos/${owner}/${repo}/git/refs`, token, {
-//         method: 'POST',
-//         body: JSON.stringify({
-//             ref: `refs/heads/${newBranchName}`,
-//             sha: fromSha
-//         })
-//     });
+//     try {
+//         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs`, {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `token ${token}`,
+//                 'Accept': 'application/vnd.github.v3+json',
+//                 'Content-Type': 'application/json',
+//                 'X-GitHub-Api-Version': '2022-11-28'
+//             },
+//             body: JSON.stringify({
+//                 ref: `refs/heads/${newBranchName}`,
+//                 sha: fromSha
+//             })
+//         });
+
+//         if (!response.ok) {
+//             const errorData = await response.json().catch(() => ({}));
+//             throw new Error(errorData.message || 'Failed to create branch');
+//         }
+
+//         return response.json();
+//     } catch (error) {
+//         console.error('Error in createBranch:', error);
+//         throw error;
+//     }
 // }
 
 // const enableGitHubPages = (token: string, owner: string, repo: string, branch: string = "gh-pages", path: string = "/"): Promise<any> => {
@@ -133,8 +172,6 @@
 //   getDefaultBranchSha,
 // };
 // //--------------
-
-
 
 // NEW
 
@@ -288,16 +325,34 @@ const createBranch = async (token: string, owner: string, repo: string, newBranc
     }
 }
 
-const enableGitHubPages = (token: string, owner: string, repo: string, branch: string = "gh-pages", path: string = "/"): Promise<any> => {
-  return makeGitHubRequest(`/repos/${owner}/${repo}/pages`, token, {
-    method: 'POST',
-    body: JSON.stringify({
-      source: {
-        branch: branch,
-        path: path, // Path within the branch, usually "/" for root.
-      },
-    }),
-  });
+interface GitHubPagesResponse {
+  status: 'success' | 'already_enabled';
+  html_url: string;
+  [key: string]: any;
+}
+
+const enableGitHubPages = async (token: string, owner: string, repo: string, branch: string = "gh-pages", path: string = "/"): Promise<GitHubPagesResponse> => {
+  try {
+    const response = await makeGitHubRequest<{html_url: string}>(`/repos/${owner}/${repo}/pages`, token, {
+      method: 'POST',
+      body: JSON.stringify({
+        source: {
+          branch: branch,
+          path: path
+        },
+      }),
+    });
+    return { status: 'success', html_url: response.html_url };
+  } catch (error: any) {
+    // If GitHub Pages is already enabled, that's fine - we can continue
+    if (error.message && error.message.includes('GitHub Pages is already enabled')) {
+      return { 
+        status: 'already_enabled',
+        html_url: `https://${owner}.github.io/${repo}/`
+      };
+    }
+    throw error;
+  }
 };
 
 export const githubService = {

@@ -182,11 +182,11 @@
 
 //   const handlePublishToGitHub = async () => {
 //     if (!repoName.trim()) {
-//         setError("Repository name cannot be empty.");
-//         setModalTitle("Publish Error");
-//         setModalContent("Please enter a valid repository name.");
-//         setIsModalOpen(true);
-//         return;
+//       setError("Repository name cannot be empty.");
+//       setModalTitle("Publish Error");
+//       setModalContent("Please enter a valid repository name.");
+//       setIsModalOpen(true);
+//       return;
 //     }
 
 //     setIsLoadingPublish(true);
@@ -199,40 +199,42 @@
 //       try {
 //         ghRepo = await githubService.createRepo(githubToken, repoName, `Portfolio for ${portfolioData.name}`);
 //       } catch (repoError: any) {
-//         // If repo already exists, this might fail. Could try to get repo instead.
-//         // For simplicity, we assume creation or fail.
-//         // A more robust solution would check if repo exists and if user wants to overwrite.
 //         if (repoError.message && repoError.message.toLowerCase().includes("name already exists")) {
-//              setError(`Repository '${repoName}' already exists on your GitHub. Please choose a different name or manage the existing repository manually.`);
-//              setModalTitle("Publish Error");
-//              setModalContent(`Repository '${repoName}' already exists on your GitHub. Please choose a different name or manage the existing repository manually.`);
-//              setIsModalOpen(true);
-//              setIsLoadingPublish(false);
-//              return;
+//           setError(`Repository '${repoName}' already exists on your GitHub. Please choose a different name or manage the existing repository manually.`);
+//           setModalTitle("Publish Error");
+//           setModalContent(`Repository '${repoName}' already exists on your GitHub. Please choose a different name or manage the existing repository manually.`);
+//           setIsModalOpen(true);
+//           setIsLoadingPublish(false);
+//           return;
 //         }
-//         throw repoError; // Re-throw other repo creation errors
+//         throw repoError;
 //       }
 
 //       const owner = ghRepo.owner.login;
 //       const repo = ghRepo.name;
 //       const ghPagesBranch = "gh-pages";
-
-//       // 2. Ensure gh-pages branch exists. Create it from default branch if not.
-//       let ghPagesBranchExists = await githubService.getBranch(githubToken, owner, repo, ghPagesBranch);
-//       if (!ghPagesBranchExists) {
-//           const defaultBranchSha = await githubService.getDefaultBranchSha(githubToken, owner, repo);
-//           await githubService.createBranch(githubToken, owner, repo, ghPagesBranch, defaultBranchSha);
-//       }
-      
-//       // 3. Generate HTML content
-//       const htmlContent = generatePortfolioHTML(portfolioData, generatedContent);
 //       const filePath = "index.html";
 //       const commitMessage = "Deploy portfolio from AI Portfolio Builder";
 
-//       // 4. Check if index.html exists to get SHA for update, otherwise create new
-//       const existingFile = await githubService.getRepoContent(githubToken, owner, repo, filePath, ghPagesBranch);
+//       // 2. Get the default branch SHA
+//       const defaultBranchSha = await githubService.getDefaultBranchSha(githubToken, owner, repo);
+      
+//       // 3. Create gh-pages branch from the default branch
+//       try {
+//         await githubService.createBranch(githubToken, owner, repo, ghPagesBranch, defaultBranchSha);
+//       } catch (branchError: any) {
+//         // If branch creation fails but it's because it already exists, that's fine
+//         if (!branchError.message.includes('Reference already exists')) {
+//           throw branchError;
+//         }
+//       }
+      
+//       // 4. Generate HTML content
+//       const htmlContent = generatePortfolioHTML(portfolioData, generatedContent);
       
 //       // 5. Create or update index.html on gh-pages branch
+//       const existingFile = await githubService.getRepoContent(githubToken, owner, repo, filePath, ghPagesBranch);
+      
 //       await githubService.createOrUpdateFile(
 //         githubToken,
 //         owner,
@@ -367,10 +369,7 @@
 // export default DashboardPage;
 
 
-
-
-// New
-
+// NEW
 
 
 import React, { useState, useCallback, ChangeEvent } from 'react';
@@ -620,13 +619,36 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ portfolioData, setPortfol
         existingFile?.sha
       );
 
-      // 6. Enable GitHub Pages
-      await githubService.enableGitHubPages(githubToken, owner, repo, ghPagesBranch);
+      // 6. Enable GitHub Pages and get the site URL
+      const pagesResponse = await githubService.enableGitHubPages(githubToken, owner, repo, ghPagesBranch);
       
-      const siteUrl = `https://${owner}.github.io/${repo}/`;
+      const siteUrl = pagesResponse.html_url || `https://${owner}.github.io/${repo}/`;
       setPublishedUrl(siteUrl);
-      setModalTitle("Successfully Published!");
-      setModalContent(`Your portfolio is now live at: <a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">${siteUrl}</a>. It may take a few minutes for GitHub Pages to fully deploy.`);
+      
+      // Set the modal content with a button to visit the site
+      setModalTitle(pagesResponse.status === 'already_enabled' 
+        ? 'GitHub Pages Already Enabled' 
+        : 'Successfully Published!');
+      
+      setModalContent(`
+        <div class="space-y-4">
+          <p>Your portfolio is now live at: <a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline break-all">${siteUrl}</a></p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">It may take a few minutes for GitHub Pages to fully deploy.</p>
+          <div class="mt-4">
+            <a 
+              href="${siteUrl}" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+              Visit Your Portfolio
+            </a>
+          </div>
+        </div>
+      `);
       setIsModalOpen(true);
 
     } catch (err) {
