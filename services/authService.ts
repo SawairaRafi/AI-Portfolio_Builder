@@ -436,7 +436,8 @@ const handleGitHubCallback = async (code: string, receivedState: string): Promis
   }
   sessionStorage.removeItem(SESSION_STORAGE_PKCE_VERIFIER_KEY); // Use sessionStorage
   
-  const proxyTokenUrl = '/api/github/exchange-token'; 
+  // const proxyTokenUrl = '/api/github/exchange-token'; 
+  const proxyTokenUrl = '/api/github-token-exchange'
   
   try {
     const response = await fetch(proxyTokenUrl, {
