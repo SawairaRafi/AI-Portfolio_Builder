@@ -12,7 +12,7 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, aiContent }) 
   const finalSkills = aiContent?.skillsKeywords.length ? aiContent.skillsKeywords : (data.skills.length ? data.skills : ["Key skills will be listed here."]);
 
   return (
-    <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg h-full overflow-y-auto bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+    <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg h-full overflow-y-auto bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-[92%]">
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">{data.name || "Your Name"}</h1>
         <h2 className="text-xl text-primary-600 dark:text-primary-400">{data.title || "Your Title/Role"}</h2>
