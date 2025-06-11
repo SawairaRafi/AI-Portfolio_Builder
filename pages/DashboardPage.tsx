@@ -328,7 +328,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ portfolioData, setPortfol
             onSkillsChange={handleSkillsChange}
           />
         </div>
-        <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow">
+        <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow pb-[4rem]!">
           <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-4">Live Preview</h3>
           <PortfolioPreview data={portfolioData} aiContent={generatedContent} />
         </div>
